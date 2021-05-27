@@ -1,38 +1,37 @@
 function image_cropped = auto_remove_bounds(image, eps)
 
-image = im2double(image);
-
-if ndims(image) == 3
-    image_input = rgb2gray(image);
-else
-    image_input = image;
+if nargin < 2
+    eps = 1e-3;
 end
 
-[IMH, IMW] = size(image_input);
+image = remove_one_side(image, eps);
+image = remove_one_side(flipud(image), eps);
+image = permute(image, [2, 1, 3]);
+image = remove_one_side(image, eps);
+image = remove_one_side(flipud(image), eps);
 
-id1 = start_removing(image_input, eps) + 1;
-id2 = IMH - start_removing(image_input(end:-1:1, :), eps) - 1;
-id3 = start_removing(image_input(:, end:-1:1), eps) + 1;
-id4 = IMW - start_removing(image_input(end:-1:1, end:-1:1), eps) - 1;
-
-image_cropped = image(id1:id2, id3:id4, :);
+image_cropped = flipud(permute(image, [2, 1, 3]));
 
 end
 
-function crop_idx = start_removing(image, eps)
+function image_cropped = remove_one_side(image, eps)
 
-[IMH, ~] = size(image);
+[imh, ~, imc] = size(image);
 
-for i=1:IMH
-    patch = image(i, :);
-    patch = patch(:);
-    patch_mean = mean(patch);
-    patch_corr = mean((patch - patch_mean) .^ 2);
-    if patch_corr > eps
+for idh=1:imh
+    min_cor = 1;
+    for idc=1:imc
+        patch = image(idh, :, idc);
+        patch = patch(:);
+        pm = mean(patch);
+        pv = mean((patch - pm) .^ 2);
+        min_cor = min(pv, min_cor);
+    end
+    if min_cor > eps
         break;
     end
 end
 
-crop_idx = i;
+image_cropped = image(idh:end, :, :);
 
 end
