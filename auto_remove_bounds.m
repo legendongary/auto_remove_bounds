@@ -10,7 +10,7 @@ image = permute(image, [2, 1, 3]);
 image = remove_one_side(image, eps);
 image = remove_one_side(flipud(image), eps);
 
-image_cropped = flipud(permute(image, [2, 1, 3]));
+image_cropped = rot90(permute(image, [2, 1, 3]),2);
 
 end
 
